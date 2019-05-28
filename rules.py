@@ -36,34 +36,35 @@ class Ship:
         for i in player.field:
             field_copy.append(i.copy())
 
+        def my_function(obj, *args):
+            try:
+                obj.field[args[0]][args[1]] = 2
+            except IndexError:
+                pass
+
         try:
-            if self.horizontal:
-                try:                            # Ставим ограничитель вокруг горизонтального корабля
-                    for i in range(3):
-                        player.field[y - 1 + i][x - 1] = 2
-                        player.field[y - 1 + i][x + self.length] = 2
-                    for i in range(self.length):
-                        player.field[y + 1][x + i] = 2
-                        player.field[y - 1][x + i] = 2
-                except IndexError:
-                    pass
+            if self.horizontal:                 # Ставим ограничитель вокруг горизонтального корабля
+                for i in range(3):
+                    my_function(player, y - 1 + i, x - 1)
+                    my_function(player, y - 1 + i, x + self.length)
+
+                for i in range(self.length):
+                    my_function(player, y + 1, x + i)
+                    my_function(player, y - 1, x + i)
 
                 for i in range(self.length):    # Ставим сам горизонтальный корабль
                     if player.field[y][x + i]:
                         raise IndexError
                     player.field[y][x + i] = 1
 
-            else:
-                try:                            # Ставим ограничитель вокруг вертикального корабля
-                    smaller_x = x - 1
-                    for i in range(3):
-                        player.field[y - 1][smaller_x + i] = 2
-                        player.field[y + self.length][smaller_x + i] = 2
-                    for i in range(self.length):
-                        player.field[y + i][x - 1] = 2
-                        player.field[y + i][x + 1] = 2
-                except IndexError:
-                    pass
+            else:                               # Ставим ограничитель вокруг вертикального корабля
+                for i in range(3):
+                    my_function(player, y - 1, x - 1 + i)
+                    my_function(player, y + self.length, x - 1 + i)
+
+                for i in range(self.length):
+                    my_function(player, y + i, x - 1)
+                    my_function(player, y + i, x + 1)
 
                 for i in range(self.length):    # Ставим сам вертикальный корабль
                     if player.field[y + i][x]:
@@ -110,3 +111,4 @@ class Control:
 
 if __name__ == '__main__':
     p1 = Player()
+    s = Ship(4)
