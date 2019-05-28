@@ -36,13 +36,13 @@ class Player:
 
 class Ship:
     def __init__(self, length):
-        if 0 < length <= 4:
-            self.length = length
         self.horizontal = None
         self.x = None
         self.y = None
         self.alive = True
-        self.health = self.length
+        if 0 < length <= 4:
+            self.length = length
+            self.health = length
 
     def __repr__(self):
         return f'S{self.length}'
@@ -60,41 +60,8 @@ class Ship:
         for i in player.field:
             field_copy.append(i.copy())
 
-        def wrap_creator(obj, *args):
-            if args[0] >= 0 and args[1] >= 0:
-                try:
-                    obj.field[args[0]][args[1]] = 'x'
-                except IndexError:
-                    pass
-
         try:
-            if self.horizontal:
-                for i in range(3):              # Ставим ограничитель вокруг горизонтального корабля
-                    wrap_creator(player, y - 1 + i, x - 1)
-                    wrap_creator(player, y - 1 + i, x + self.length)
-
-                for i in range(self.length):
-                    wrap_creator(player, y + 1, x + i)
-                    wrap_creator(player, y - 1, x + i)
-
-                for i in range(self.length):    # Ставим сам горизонтальный корабль
-                    if player.field[y][x + i]:
-                        raise IndexError
-                    player.field[y][x + i] = self
-
-            else:
-                for i in range(3):              # Ставим ограничитель вокруг вертикального корабля
-                    wrap_creator(player, y - 1, x - 1 + i)
-                    wrap_creator(player, y + self.length, x - 1 + i)
-
-                for i in range(self.length):
-                    wrap_creator(player, y + i, x - 1)
-                    wrap_creator(player, y + i, x + 1)
-
-                for i in range(self.length):    # Ставим сам вертикальный корабль
-                    if player.field[y + i][x]:
-                        raise IndexError
-                    player.field[y + i][x] = self
+            self.ship_drawing(self, player, x, y, filler=self)
 
         except IndexError:                      # Если корабль не поместился - востанавливаем изначальное поле
             player.field = field_copy
@@ -105,6 +72,43 @@ class Ship:
         self.y = int(y)
         return True
 
+    @staticmethod
+    def ship_drawing(ship_obj, player, x, y, filler, attr='field', error=True):
+
+        def wrap_creator(obj, *args):
+            if args[0] >= 0 and args[1] >= 0:
+                try:
+                    getattr(obj, attr)[args[0]][args[1]] = 9
+                except IndexError:
+                    pass
+
+        if ship_obj.horizontal:
+            for i in range(3):                      # Ставим ограничитель вокруг горизонтального корабля
+                wrap_creator(player, y - 1 + i, x - 1)
+                wrap_creator(player, y - 1 + i, x + ship_obj.length)
+
+            for i in range(ship_obj.length):
+                wrap_creator(player, y + 1, x + i)
+                wrap_creator(player, y - 1, x + i)
+
+            for i in range(ship_obj.length):        # Ставим сам горизонтальный корабль
+                if error and getattr(player, attr)[y][x + i]:
+                    raise IndexError
+                getattr(player, attr)[y][x + i] = filler
+
+        else:
+            for i in range(3):                      # Ставим ограничитель вокруг вертикального корабля
+                wrap_creator(player, y - 1, x - 1 + i)
+                wrap_creator(player, y + ship_obj.length, x - 1 + i)
+
+            for i in range(ship_obj.length):
+                wrap_creator(player, y + i, x - 1)
+                wrap_creator(player, y + i, x + 1)
+
+            for i in range(ship_obj.length):        # Ставим сам вертикальный корабль
+                if error and getattr(player, attr)[y + i][x]:
+                    raise IndexError
+                getattr(player, attr)[y + i][x] = filler
 
 class Ships:
     def __init__(self, player):
@@ -149,8 +153,14 @@ class Control:
 
             if not enemy_health:
                 x, y = enemy_ship.x, enemy_ship.y
-                length = enemy_ship.length
-                pass
+                enemy_ship.ship_drawing(
+                    enemy_ship,
+                    self.player,
+                    x, y,
+                    filler=1,
+                    attr='enemy_field',
+                    error=False
+                )
 
         else:
             self.player.enemy_field[y][x] = 'miss'
