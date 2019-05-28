@@ -1,21 +1,12 @@
 class Player:
     def __init__(self):
         self.control = Control(self)
-        self.field = [
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        ]
+        self.field = [[0] * 10] * 10
+        self.enemy_field = [[0] * 10] * 10
 
-    def show_field(self):
-        for i in self.field:
+    @staticmethod
+    def show_field(field):
+        for i in field:
             print(i)
 
 
@@ -36,35 +27,36 @@ class Ship:
         for i in player.field:
             field_copy.append(i.copy())
 
-        def my_function(obj, *args):
-            try:
-                obj.field[args[0]][args[1]] = 2
-            except IndexError:
-                pass
+        def wrap_creator(obj, *args):
+            if args[0] >= 0 and args[1] >= 0:
+                try:
+                    obj.field[args[0]][args[1]] = 2
+                except IndexError:
+                    pass
 
         try:
-            if self.horizontal:                 # Ставим ограничитель вокруг горизонтального корабля
-                for i in range(3):
-                    my_function(player, y - 1 + i, x - 1)
-                    my_function(player, y - 1 + i, x + self.length)
+            if self.horizontal:
+                for i in range(3):              # Ставим ограничитель вокруг горизонтального корабля
+                    wrap_creator(player, y - 1 + i, x - 1)
+                    wrap_creator(player, y - 1 + i, x + self.length)
 
                 for i in range(self.length):
-                    my_function(player, y + 1, x + i)
-                    my_function(player, y - 1, x + i)
+                    wrap_creator(player, y + 1, x + i)
+                    wrap_creator(player, y - 1, x + i)
 
                 for i in range(self.length):    # Ставим сам горизонтальный корабль
                     if player.field[y][x + i]:
                         raise IndexError
                     player.field[y][x + i] = 1
 
-            else:                               # Ставим ограничитель вокруг вертикального корабля
-                for i in range(3):
-                    my_function(player, y - 1, x - 1 + i)
-                    my_function(player, y + self.length, x - 1 + i)
+            else:
+                for i in range(3):              # Ставим ограничитель вокруг вертикального корабля
+                    wrap_creator(player, y - 1, x - 1 + i)
+                    wrap_creator(player, y + self.length, x - 1 + i)
 
                 for i in range(self.length):
-                    my_function(player, y + i, x - 1)
-                    my_function(player, y + i, x + 1)
+                    wrap_creator(player, y + i, x - 1)
+                    wrap_creator(player, y + i, x + 1)
 
                 for i in range(self.length):    # Ставим сам вертикальный корабль
                     if player.field[y + i][x]:
@@ -111,4 +103,5 @@ class Control:
 
 if __name__ == '__main__':
     p1 = Player()
+    p2 = Player()
     s = Ship(4)
