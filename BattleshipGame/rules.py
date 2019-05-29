@@ -1,3 +1,6 @@
+# from BattleshipGame.interface import Interface
+
+
 class Player:
     def __init__(self):
         self.control = Control(self)
@@ -131,12 +134,11 @@ class Ships:
                     result = getattr(self, attr).set_position(
                         self.player,
                         bool(input('is it horizontal? ')),
-                        int(input('x: ')),
-                        int(input('y: '))
+                        int(input('x: ')) - 1,
+                        int(input('y: ')) - 1
                     )
 
-                    self.player.show_field()
-                    print('\n')
+                    yield self.player.field
 
 
 class Control:
@@ -172,9 +174,3 @@ class Control:
 
         self.player.show_field(False)
         return enemy_health
-
-
-if __name__ == '__main__':
-    p1 = Player()
-    p2 = Player()
-    s = Ship(4)
