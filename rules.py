@@ -73,12 +73,12 @@ class Ship:
         return True
 
     @staticmethod
-    def ship_drawing(ship_obj, player, x, y, filler, attr='field', error=True):
+    def ship_drawing(ship_obj, player, x, y, filler, field='field', error=True):
 
         def wrap_creator(obj, *args):
             if args[0] >= 0 and args[1] >= 0:
                 try:
-                    getattr(obj, attr)[args[0]][args[1]] = 9
+                    getattr(obj, field)[args[0]][args[1]] = 9
                 except IndexError:
                     pass
 
@@ -92,9 +92,9 @@ class Ship:
                 wrap_creator(player, y - 1, x + i)
 
             for i in range(ship_obj.length):        # Ставим сам горизонтальный корабль
-                if error and getattr(player, attr)[y][x + i]:
+                if error and getattr(player, field)[y][x + i]:
                     raise IndexError
-                getattr(player, attr)[y][x + i] = filler
+                getattr(player, field)[y][x + i] = filler
 
         else:
             for i in range(3):                      # Ставим ограничитель вокруг вертикального корабля
@@ -106,9 +106,10 @@ class Ship:
                 wrap_creator(player, y + i, x + 1)
 
             for i in range(ship_obj.length):        # Ставим сам вертикальный корабль
-                if error and getattr(player, attr)[y + i][x]:
+                if error and getattr(player, field)[y + i][x]:
                     raise IndexError
-                getattr(player, attr)[y + i][x] = filler
+                getattr(player, field)[y + i][x] = filler
+
 
 class Ships:
     def __init__(self, player):
@@ -144,6 +145,10 @@ class Control:
 
     def shoot(self, enemy, x, y):
         enemy_health = None
+        if self.player.enemy_field[y][x]:
+            print('You already shoot in this coordinates...')
+            return
+
         if isinstance(enemy.field[y][x], Ship):
             enemy_ship = enemy.field[y][x]
             enemy_health = enemy_ship.hit()
@@ -158,7 +163,7 @@ class Control:
                     self.player,
                     x, y,
                     filler=1,
-                    attr='enemy_field',
+                    field='enemy_field',
                     error=False
                 )
 
