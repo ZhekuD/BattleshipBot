@@ -1,3 +1,6 @@
+import random
+
+
 class Player:
     def __init__(self):
         self.control = Control(self)
@@ -65,7 +68,7 @@ class Ship:
 
         except IndexError:  # Если корабль не поместился - востанавливаем изначальное поле
             player.field = field_copy
-            print('Error: not enough space!')
+            # print('Error: not enough space!')
             return False
 
         self.x = int(x)
@@ -73,16 +76,21 @@ class Ship:
         return True
 
     @staticmethod
-    def ship_drawing(ship_obj, player, x, y, filler, field='field', error=True):
+    def ship_drawing(ship_obj, player, x, y, filler, wrap='8', field='field', error=True):
 
         def wrap_creator(obj, *args):
             if args[0] >= 0 and args[1] >= 0:
                 try:
-                    getattr(obj, field)[args[0]][args[1]] = 9
+                    getattr(obj, field)[args[0]][args[1]] = wrap
                 except IndexError:
                     pass
 
         if ship_obj.horizontal:
+            for i in range(ship_obj.length):  # Ставим горизонтальный корабль
+                if error and getattr(player, field)[y][x + i]:
+                    raise IndexError
+                getattr(player, field)[y][x + i] = filler
+
             for i in range(3):  # Ставим ограничитель вокруг горизонтального корабля
                 wrap_creator(player, y - 1 + i, x - 1)
                 wrap_creator(player, y - 1 + i, x + ship_obj.length)
@@ -91,12 +99,12 @@ class Ship:
                 wrap_creator(player, y + 1, x + i)
                 wrap_creator(player, y - 1, x + i)
 
-            for i in range(ship_obj.length):  # Ставим сам горизонтальный корабль
-                if error and getattr(player, field)[y][x + i]:
-                    raise IndexError
-                getattr(player, field)[y][x + i] = filler
-
         else:
+            for i in range(ship_obj.length):  # Ставим вертикальный корабль
+                if error and getattr(player, field)[y + i][x]:
+                    raise IndexError
+                getattr(player, field)[y + i][x] = filler
+
             for i in range(3):  # Ставим ограничитель вокруг вертикального корабля
                 wrap_creator(player, y - 1, x - 1 + i)
                 wrap_creator(player, y + ship_obj.length, x - 1 + i)
@@ -104,11 +112,6 @@ class Ship:
             for i in range(ship_obj.length):
                 wrap_creator(player, y + i, x - 1)
                 wrap_creator(player, y + i, x + 1)
-
-            for i in range(ship_obj.length):  # Ставим сам вертикальный корабль
-                if error and getattr(player, field)[y + i][x]:
-                    raise IndexError
-                getattr(player, field)[y + i][x] = filler
 
 
 class Ships:
@@ -128,16 +131,16 @@ class Ships:
             setattr(self, f'single_decker{i}', Ship(1))
 
     def ships_deploy(self):
-        def input_coordinates():
+        def input_coordinates():  # Ввод координат и проверка их валидности
             while True:
-                destination = bool(input('is it horizontal? '))
+                orientation = bool(input('is it horizontal? '))
                 coor = input('write coordinate: ')
                 pattern = Ships.__coordinates
                 if 1 < len(coor) < 4 and coor[0].isalpha() and coor[1:].isdigit():
                     x = coor[0].lower()
                     y = int(coor[1:]) - 1
                     if x in pattern and y in pattern.values():
-                        return destination, int(pattern[x]), y
+                        return orientation, int(pattern[x]), y
                 print('Error: wrong coordinate!')
 
         for attr in self.__dict__:
@@ -149,6 +152,22 @@ class Ships:
                     result = getattr(self, attr).set_position(self.player, *position)
                 yield self.player.field
 
+    def auto_ships_deploy(self):
+        for attr in self.__dict__:
+            if isinstance(getattr(self, attr), Ship):
+                result = False
+                while not result:
+                    orientation = random.randint(0, 1)
+                    limit_x = 0
+                    limit_y = getattr(self, attr).length - 1
+                    if orientation:
+                        limit_x = getattr(self, attr).length - 1
+                        limit_y = 0
+                    x = random.randint(0, 9 - limit_x)
+                    y = random.randint(0, 9 - limit_y)
+                    result = getattr(self, attr).set_position(self.player, orientation, x, y)
+        print('Done!')
+
 
 class Control:
     def __init__(self, player):
@@ -157,7 +176,7 @@ class Control:
     def shoot(self, enemy, x, y):
         enemy_health = None
         if self.player.enemy_field[y][x]:
-            print('You already shoot in this coordinates...')
+            print('Error: You already shoot in this coordinates!')
             return
 
         if isinstance(enemy.field[y][x], Ship):
@@ -174,6 +193,7 @@ class Control:
                     self.player,
                     x, y,
                     filler=1,
+                    wrap=8,
                     field='enemy_field',
                     error=False
                 )

@@ -1,6 +1,7 @@
 from BattleshipGame.rules import Ship
 from pathlib import Path
 
+
 class Interface:
     def __init__(self):
         with open(Path(__file__).resolve().parent.joinpath('field_pattern'), 'r') as file:
