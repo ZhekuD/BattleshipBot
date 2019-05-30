@@ -1,6 +1,3 @@
-# from BattleshipGame.interface import Interface
-
-
 class Player:
     def __init__(self):
         self.control = Control(self)
@@ -59,14 +56,14 @@ class Ship:
 
     def set_position(self, player, horizontal, x, y):
         self.horizontal = horizontal
-        field_copy = []                         # Делаем копию поля игрока в первоначальном виде
+        field_copy = []  # Делаем копию поля игрока в первоначальном виде
         for i in player.field:
             field_copy.append(i.copy())
 
         try:
             self.ship_drawing(self, player, x, y, filler=self)
 
-        except IndexError:                      # Если корабль не поместился - востанавливаем изначальное поле
+        except IndexError:  # Если корабль не поместился - востанавливаем изначальное поле
             player.field = field_copy
             print('Error: not enough space!')
             return False
@@ -86,7 +83,7 @@ class Ship:
                     pass
 
         if ship_obj.horizontal:
-            for i in range(3):                      # Ставим ограничитель вокруг горизонтального корабля
+            for i in range(3):  # Ставим ограничитель вокруг горизонтального корабля
                 wrap_creator(player, y - 1 + i, x - 1)
                 wrap_creator(player, y - 1 + i, x + ship_obj.length)
 
@@ -94,13 +91,13 @@ class Ship:
                 wrap_creator(player, y + 1, x + i)
                 wrap_creator(player, y - 1, x + i)
 
-            for i in range(ship_obj.length):        # Ставим сам горизонтальный корабль
+            for i in range(ship_obj.length):  # Ставим сам горизонтальный корабль
                 if error and getattr(player, field)[y][x + i]:
                     raise IndexError
                 getattr(player, field)[y][x + i] = filler
 
         else:
-            for i in range(3):                      # Ставим ограничитель вокруг вертикального корабля
+            for i in range(3):  # Ставим ограничитель вокруг вертикального корабля
                 wrap_creator(player, y - 1, x - 1 + i)
                 wrap_creator(player, y + ship_obj.length, x - 1 + i)
 
@@ -108,13 +105,18 @@ class Ship:
                 wrap_creator(player, y + i, x - 1)
                 wrap_creator(player, y + i, x + 1)
 
-            for i in range(ship_obj.length):        # Ставим сам вертикальный корабль
+            for i in range(ship_obj.length):  # Ставим сам вертикальный корабль
                 if error and getattr(player, field)[y + i][x]:
                     raise IndexError
                 getattr(player, field)[y + i][x] = filler
 
 
 class Ships:
+    __coordinates = {
+        'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4,
+        'f': 5, 'g': 6, 'h': 7, 'i': 8, 'j': 9
+    }
+
     def __init__(self, player):
         self.player = player
         self.four_decker1 = Ship(4)
@@ -126,19 +128,26 @@ class Ships:
             setattr(self, f'single_decker{i}', Ship(1))
 
     def ships_deploy(self):
+        def input_coordinates():
+            while True:
+                destination = bool(input('is it horizontal? '))
+                coor = input('write coordinate: ')
+                pattern = Ships.__coordinates
+                if 1 < len(coor) < 4 and coor[0].isalpha() and coor[1:].isdigit():
+                    x = coor[0].lower()
+                    y = int(coor[1:]) - 1
+                    if x in pattern and y in pattern.values():
+                        return destination, int(pattern[x]), y
+                print('Error: wrong coordinate!')
+
         for attr in self.__dict__:
             if isinstance(getattr(self, attr), Ship):
                 result = False
-                while not result:               # Цикл запусткается только если функция set_position вернула False
+                while not result:  # Цикл запусткается только если функция set_position вернула False
                     print(f'write position for {attr}:')
-                    result = getattr(self, attr).set_position(
-                        self.player,
-                        bool(input('is it horizontal? ')),
-                        int(input('x: ')) - 1,
-                        int(input('y: ')) - 1
-                    )
-
-                    yield self.player.field
+                    position = input_coordinates()
+                    result = getattr(self, attr).set_position(self.player, *position)
+                yield self.player.field
 
 
 class Control:

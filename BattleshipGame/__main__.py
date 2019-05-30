@@ -10,5 +10,8 @@ if __name__ == '__main__':
     interface.field_render(player1, 'field')
 
     while True:
-        next(player1_field_generator)
+        try:
+            next(player1_field_generator)
+        except StopIteration:
+            break
         interface.field_render(player1, 'field')
