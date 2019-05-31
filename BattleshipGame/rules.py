@@ -1,4 +1,4 @@
-import random
+from random import randint
 
 
 class Player:
@@ -115,11 +115,6 @@ class Ship:
 
 
 class Ships:
-    __coordinates = {
-        'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4,
-        'f': 5, 'g': 6, 'h': 7, 'i': 8, 'j': 9
-    }
-
     def __init__(self, player):
         self.player = player
         self.four_decker1 = Ship(4)
@@ -131,24 +126,12 @@ class Ships:
             setattr(self, f'single_decker{i}', Ship(1))
 
     def ships_deploy(self):
-        def input_coordinates():  # Ввод координат и проверка их валидности
-            while True:
-                orientation = bool(input('is it horizontal? '))
-                coor = input('write coordinate: ')
-                pattern = Ships.__coordinates
-                if 1 < len(coor) < 4 and coor[0].isalpha() and coor[1:].isdigit():
-                    x = coor[0].lower()
-                    y = int(coor[1:]) - 1
-                    if x in pattern and y in pattern.values():
-                        return orientation, int(pattern[x]), y
-                print('Error: wrong coordinate!')
-
         for attr in self.__dict__:
             if isinstance(getattr(self, attr), Ship):
                 result = False
                 while not result:  # Цикл запусткается только если функция set_position вернула False
                     print(f'write position for {attr}:')
-                    position = input_coordinates()
+                    position = beautiful_coordinates_input()
                     result = getattr(self, attr).set_position(self.player, *position)
                 yield self.player.field
 
@@ -157,14 +140,13 @@ class Ships:
             if isinstance(getattr(self, attr), Ship):
                 result = False
                 while not result:
-                    orientation = random.randint(0, 1)
-                    limit_x = 0
-                    limit_y = getattr(self, attr).length - 1
-                    if orientation:
-                        limit_x = getattr(self, attr).length - 1
-                        limit_y = 0
-                    x = random.randint(0, 9 - limit_x)
-                    y = random.randint(0, 9 - limit_y)
+                    orientation = randint(0, 1)
+
+                    limit_x = getattr(self, attr).length - 1 if orientation else 0  # Ограничитель для случайных чисел,
+                    limit_y = 0 if orientation else getattr(self, attr).length - 1  # что бы корабль не вылазил за поле
+
+                    x = randint(0, 9 - limit_x)
+                    y = randint(0, 9 - limit_y)
                     result = getattr(self, attr).set_position(self.player, orientation, x, y)
         print('Done!')
 
@@ -197,9 +179,28 @@ class Control:
                     field='enemy_field',
                     error=False
                 )
-
         else:
             self.player.enemy_field[y][x] = 'miss'
 
-        self.player.show_field(False)
         return enemy_health
+
+
+def beautiful_coordinates_input(orientation=True):  # Ввод координат и проверка их валидности
+    ship_orientation = None
+    coordinates_pattern = {
+        'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4,
+        'f': 5, 'g': 6, 'h': 7, 'i': 8, 'j': 9
+    }
+    while True:
+        if orientation:
+            ship_orientation = bool(input('is it horizontal? '))
+        coor = input('write coordinate: ')
+        pattern = coordinates_pattern
+        if 1 < len(coor) < 4 and coor[0].isalpha() and coor[1:].isdigit():
+            x = coor[0].lower()
+            y = int(coor[1:]) - 1
+            if x in pattern and y in pattern.values():
+                if orientation:
+                    return ship_orientation, int(pattern[x]), y
+                return int(pattern[x]), y
+        print('Error: wrong coordinate!')
