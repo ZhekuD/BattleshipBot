@@ -156,19 +156,19 @@ class Control:
         self.player = player
 
     def shoot(self, enemy, x, y):
-        enemy_health = None
+        enemy_ship_status = None
         if self.player.enemy_field[y][x]:
             print('Error: You already shoot in this coordinates!')
-            return
+            return 'Error'
 
         if isinstance(enemy.field[y][x], Ship):
             enemy_ship = enemy.field[y][x]
-            enemy_health = enemy_ship.hit()
+            enemy_ship_status = enemy_ship.hit()
             enemy.field[y][x] = 2
             self.player.enemy_field[y][x] = 'hit'
             print('Hit!')
 
-            if not enemy_health:
+            if not enemy_ship_status:
                 x, y = enemy_ship.x, enemy_ship.y
                 enemy_ship.ship_drawing(
                     enemy_ship,
@@ -182,7 +182,7 @@ class Control:
         else:
             self.player.enemy_field[y][x] = 'miss'
 
-        return enemy_health
+        return enemy_ship_status
 
 
 def beautiful_coordinates_input(orientation=True):  # Ввод координат и проверка их валидности
