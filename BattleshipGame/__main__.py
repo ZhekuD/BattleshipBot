@@ -78,16 +78,18 @@ if __name__ == '__main__':
     # Запускаем создание игового поля для игрока №2
     print('Generating field for player2...')
     player2.ships.auto_ships_deploy()
-    interface.field_render(player2, 'field')
+    # interface.field_render(player2, 'field')
 
     while True:
-        # print('player1\'s shoot')
-        # result = 'Error'
-        # while result == 'Error':
-        #     x, y = beautiful_coordinates_input(orientation=False)
-        #     result = player1.control.shoot(player2, x, y)
-        # interface.field_render(player1)
+        # Этап стрельбы игрока
+        print('player1\'s shoot')
+        result = 'Error'
+        while result == 'Error':
+            x, y = beautiful_coordinates_input(orientation=False)
+            result = player1.control.shoot(player2, x, y)
+        interface.field_render(player1)
 
-        ai.shoot(player1)
-        interface.field_render(player2)
-        input('>>')
+        # Этап стрельбы компьютера
+        print('AI\'s shoot')
+        ai.auto_shoot(player1)
+        # interface.field_render(player2)

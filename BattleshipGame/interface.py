@@ -16,6 +16,8 @@ class Interface:
                 for block in line:
                     if isinstance(block, Ship):
                         data.append('[38;5;226m{}[0m'.format('■'))
+                    elif block == 2:
+                        data.append(('[31;1;5m{}[0m'.format('□')))
                     elif block == 'miss' or block == 8:
                         data.append('{}'.format('◯'))  # '[37m{}[0m'
                     elif block == 'hit':
