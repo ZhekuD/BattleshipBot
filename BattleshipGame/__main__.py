@@ -82,14 +82,15 @@ if __name__ == '__main__':
 
     while True:
         # Этап стрельбы игрока
-        print('player1\'s shoot')
-        result = 'Error'
-        while result == 'Error':
-            x, y = beautiful_coordinates_input(orientation=False)
-            result = player1.control.shoot(player2, x, y)
-        interface.field_render(player1)
+        # print('player1\'s shoot')
+        # result = 'Error'
+        # while result == 'Error':
+        #     x, y = beautiful_coordinates_input(orientation=False)
+        #     result = player1.control.shoot(player2, x, y)
+        # interface.field_render(player1)
 
         # Этап стрельбы компьютера
         print('AI\'s shoot')
         ai.auto_shoot(player1)
-        # interface.field_render(player2)
+        interface.field_render(player2)
+        input(">")

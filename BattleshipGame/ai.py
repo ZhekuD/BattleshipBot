@@ -30,11 +30,10 @@ class AI:
                 x, y = next_choice
                 if next_key == 'x' and x + 1 < 10 and x - 1 >= 0:
                     new_next_cell = (x + 1, y) if x > self.success_cell[0] else (x - 1, y)
-                elif next_key == 'y' and y + 1 < 10 and y - 1 > 0:
+                    self.memory[next_key].append(new_next_cell)
+                if next_key == 'y' and y + 1 < 10 and y - 1 >= 0:
                     new_next_cell = (x, y + 1) if y > self.success_cell[1] else (x, y - 1)
-                else:
-                    return
-                self.memory[next_key].append(new_next_cell)
+                    self.memory[next_key].append(new_next_cell)
                 return
 
         while True:
