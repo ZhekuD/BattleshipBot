@@ -180,7 +180,7 @@ class Control:
                     error=False
                 )
         else:
-            # enemy.field[y][x] = 'miss'
+            enemy.field[y][x] = 'miss'
             self.player.enemy_field[y][x] = 'miss'
 
         return enemy_ship_status

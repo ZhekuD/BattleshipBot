@@ -6,7 +6,7 @@ import logging
 
 def menu():
     def start():
-        print('GAME SETTINGS:\n1. Random deploying ships\n2. Choose position manually\n3. Back')
+        print('GAME SETTINGS:\n1. Random ships deploy\n2. Choose position manually\n3. Back')
         item2 = None
         while type(item2) != int:
             item2 = input(">> ")
@@ -82,15 +82,14 @@ if __name__ == '__main__':
 
     while True:
         # Этап стрельбы игрока
-        # print('player1\'s shoot')
-        # result = 'Error'
-        # while result == 'Error':
-        #     x, y = beautiful_coordinates_input(orientation=False)
-        #     result = player1.control.shoot(player2, x, y)
-        # interface.field_render(player1)
+        print('player1\'s shoot')
+        result = 'Error'
+        while result == 'Error':
+            x, y = beautiful_coordinates_input(orientation=False)
+            result = player1.control.shoot(player2, x, y)
+        interface.field_render(player1)
 
         # Этап стрельбы компьютера
         print('AI\'s shoot')
         ai.auto_shoot(player1)
-        interface.field_render(player2)
-        input(">")
+        # interface.field_render(player2)
