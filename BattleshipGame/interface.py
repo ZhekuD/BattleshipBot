@@ -6,8 +6,11 @@ class Interface:
     def __init__(self):
         with open(Path(__file__).resolve().parent.joinpath('field_pattern'), 'r') as file:
             field_pattern = file.read()
+        with open(Path(__file__).resolve().parent.joinpath('score_pattern'), 'r') as file:
+            score_pattern = file.read()
 
         self.field_pattern = field_pattern
+        self.score_pattern = score_pattern
 
     def field_render(self, player, field=''):
         def analyser(f):
@@ -32,8 +35,9 @@ class Interface:
             gfield = ''
             field_data = self.field_pattern.format(*analyser('field'))
             enemy_filed_data = self.field_pattern.format(*analyser('enemy_field'))
-            for x, y in zip(field_data.splitlines(), enemy_filed_data.splitlines()):
-                gfield += x + '    ' + y + '\n'
+            score = self.score_pattern.format(*player.ships.ships_status().values())
+            for x, y, z in zip(field_data.splitlines(), enemy_filed_data.splitlines(), score.splitlines()):
+                gfield += x + '  ' + y + '    ' + z + '\n'
         else:
             result = analyser(field)
             gfield = self.field_pattern.format(*result)

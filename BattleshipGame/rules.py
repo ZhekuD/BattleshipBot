@@ -5,6 +5,7 @@ class Player:
     def __init__(self):
         self.control = Control(self)
         self.ships = Ships(self)
+        self.hp = 10
         self.field = [
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -38,7 +39,8 @@ class Player:
 
 
 class Ship:
-    def __init__(self, length):
+    def __init__(self, length, player):
+        self.player = player
         self.horizontal = None
         self.x = None
         self.y = None
@@ -54,6 +56,7 @@ class Ship:
         self.health -= 1
         if not self.health:
             self.alive = False
+            self.player.hp -= 1
             return self.alive
         return self.alive
 
@@ -62,10 +65,8 @@ class Ship:
         field_copy = []  # Делаем копию поля игрока в первоначальном виде
         for i in player.field:
             field_copy.append(i.copy())
-
         try:
             self.ship_drawing(self, player, x, y, filler=self)
-
         except IndexError:  # Если корабль не поместился - востанавливаем изначальное поле
             player.field = field_copy
             # print('Error: not enough space!')
@@ -117,13 +118,25 @@ class Ship:
 class Ships:
     def __init__(self, player):
         self.player = player
-        self.four_decker1 = Ship(4)
+        self.four_decker1 = Ship(4, player)
+        self.status = None
         for i in range(1, 3):
-            setattr(self, f'three_decker{i}', Ship(3))
+            setattr(self, f'three_decker{i}', Ship(3, player))
         for i in range(1, 4):
-            setattr(self, f'two_decker{i}', Ship(2))
+            setattr(self, f'two_decker{i}', Ship(2, player))
         for i in range(1, 5):
-            setattr(self, f'single_decker{i}', Ship(1))
+            setattr(self, f'single_decker{i}', Ship(1, player))
+
+    def ships_status(self):
+        status = {}
+        for i in (4, 3, 2, 1):
+            counter = 0
+            for attr in self.__dict__:
+                attribute = getattr(self, attr)
+                if isinstance(attribute, Ship) and attribute.length == i and attribute.alive:
+                    counter += 1
+            status[i] = counter
+        return status
 
     def ships_deploy(self):
         for attr in self.__dict__:
@@ -170,15 +183,8 @@ class Control:
 
             if not enemy_ship_status:
                 x, y = enemy_ship.x, enemy_ship.y
-                enemy_ship.ship_drawing(
-                    enemy_ship,
-                    self.player,
-                    x, y,
-                    filler=1,
-                    wrap=8,
-                    field='enemy_field',
-                    error=False
-                )
+                enemy_ship.ship_drawing(enemy_ship, enemy, x, y, 2, 8, 'field', False)
+                enemy_ship.ship_drawing(enemy_ship, self.player, x, y, 1, 8, 'enemy_field', False)
         else:
             enemy.field[y][x] = 'miss'
             self.player.enemy_field[y][x] = 'miss'

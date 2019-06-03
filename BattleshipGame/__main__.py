@@ -1,7 +1,6 @@
 from BattleshipGame.rules import Player, beautiful_coordinates_input
 from BattleshipGame.interface import Interface
 from BattleshipGame.ai import AI
-import logging
 
 
 def menu():
@@ -40,7 +39,6 @@ def menu():
 
 
 if __name__ == '__main__':
-    logging.basicConfig(filename='info.log', level=logging.DEBUG)
     player1 = Player()
     player2 = Player()
     ai = AI(player2)
@@ -73,23 +71,32 @@ if __name__ == '__main__':
     else:
         print('Generating field for player1...')
         player1.ships.auto_ships_deploy()
-        interface.field_render(player1, 'field')
+        interface.field_render(player1)
 
     # Запускаем создание игового поля для игрока №2
     print('Generating field for player2...')
     player2.ships.auto_ships_deploy()
-    # interface.field_render(player2, 'field')
 
     while True:
         # Этап стрельбы игрока
-        print('player1\'s shoot')
+        print('player1\'s shoot...')
         result = 'Error'
         while result == 'Error':
             x, y = beautiful_coordinates_input(orientation=False)
             result = player1.control.shoot(player2, x, y)
-        interface.field_render(player1)
+        if not player2.hp:
+            interface.field_render(player1)
+            print('VICTORY!!!')
+            break
 
         # Этап стрельбы компьютера
-        print('AI\'s shoot')
+        print('AI\'s shoot...')
         ai.auto_shoot(player1)
         # interface.field_render(player2)
+
+        interface.field_render(player1)
+
+        if not player1.hp:
+            print('Lose... :(\nEnemy field:')
+            interface.field_render(player2, 'field')
+            break
