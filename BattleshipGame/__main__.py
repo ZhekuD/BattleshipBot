@@ -97,6 +97,6 @@ if __name__ == '__main__':
         interface.field_render(player1)
 
         if not player1.hp:
-            print('Lose... :(\nEnemy field:')
+            print('You lose... :(\n\nEnemy field:')
             interface.field_render(player2, 'field')
             break

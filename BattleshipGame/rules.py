@@ -32,6 +32,9 @@ class Player:
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         ]
 
+    def data_input(self, json):
+        pass
+
     def show_field(self, field=True):
         a = self.field if field else self.enemy_field
         for i in a:
@@ -66,7 +69,7 @@ class Ship:
         for i in player.field:
             field_copy.append(i.copy())
         try:
-            self.ship_drawing(self, player, x, y, filler=self)
+            ship_drawing(self, player, x, y, filler=self, wrap='8')
         except IndexError:  # Если корабль не поместился - востанавливаем изначальное поле
             player.field = field_copy
             # print('Error: not enough space!')
@@ -76,91 +79,47 @@ class Ship:
         self.y = int(y)
         return True
 
-    @staticmethod
-    def ship_drawing(ship_obj, player, x, y, filler, wrap='8', field='field', error=True):
-
-        def wrap_creator(obj, *args):
-            if args[0] >= 0 and args[1] >= 0:
-                try:
-                    getattr(obj, field)[args[0]][args[1]] = wrap
-                except IndexError:
-                    pass
-
-        if ship_obj.horizontal:
-            for i in range(ship_obj.length):  # Ставим горизонтальный корабль
-                if error and getattr(player, field)[y][x + i]:
-                    raise IndexError
-                getattr(player, field)[y][x + i] = filler
-
-            for i in range(3):  # Ставим ограничитель вокруг горизонтального корабля
-                wrap_creator(player, y - 1 + i, x - 1)
-                wrap_creator(player, y - 1 + i, x + ship_obj.length)
-
-            for i in range(ship_obj.length):
-                wrap_creator(player, y + 1, x + i)
-                wrap_creator(player, y - 1, x + i)
-
-        else:
-            for i in range(ship_obj.length):  # Ставим вертикальный корабль
-                if error and getattr(player, field)[y + i][x]:
-                    raise IndexError
-                getattr(player, field)[y + i][x] = filler
-
-            for i in range(3):  # Ставим ограничитель вокруг вертикального корабля
-                wrap_creator(player, y - 1, x - 1 + i)
-                wrap_creator(player, y + ship_obj.length, x - 1 + i)
-
-            for i in range(ship_obj.length):
-                wrap_creator(player, y + i, x - 1)
-                wrap_creator(player, y + i, x + 1)
-
 
 class Ships:
     def __init__(self, player):
         self.player = player
-        self.four_decker1 = Ship(4, player)
-        self.status = None
-        for i in range(1, 3):
-            setattr(self, f'three_decker{i}', Ship(3, player))
-        for i in range(1, 4):
-            setattr(self, f'two_decker{i}', Ship(2, player))
+        self.list = []
         for i in range(1, 5):
-            setattr(self, f'single_decker{i}', Ship(1, player))
+            for k in range(5 - i):
+                self.list.append(Ship(i, player))
 
     def ships_status(self):
         status = {}
-        for i in (4, 3, 2, 1):
+        for i in range(4, 0, -1):
             counter = 0
-            for attr in self.__dict__:
-                attribute = getattr(self, attr)
-                if isinstance(attribute, Ship) and attribute.length == i and attribute.alive:
+            for ship in self.list:
+                if ship.length == i and ship.alive:
                     counter += 1
             status[i] = counter
         return status
 
+    def data_output(self):
+        pass
+
     def ships_deploy(self):
-        for attr in self.__dict__:
-            if isinstance(getattr(self, attr), Ship):
-                result = False
-                while not result:  # Цикл запусткается только если функция set_position вернула False
-                    print(f'write position for {attr}:')
-                    position = beautiful_coordinates_input()
-                    result = getattr(self, attr).set_position(self.player, *position)
-                yield self.player.field
+        for ship in self.list:
+            result = False
+            while not result:  # Цикл запусткается только если функция set_position вернула False
+                print(f'write position for {ship}:')
+                position = beautiful_coordinates_input()
+                result = ship.set_position(self.player, *position)
+            yield self.player.field
 
     def auto_ships_deploy(self):
-        for attr in self.__dict__:
-            if isinstance(getattr(self, attr), Ship):
-                result = False
-                while not result:
-                    orientation = randint(0, 1)
-
-                    limit_x = getattr(self, attr).length - 1 if orientation else 0  # Ограничитель для случайных чисел,
-                    limit_y = 0 if orientation else getattr(self, attr).length - 1  # что бы корабль не вылазил за поле
-
-                    x = randint(0, 9 - limit_x)
-                    y = randint(0, 9 - limit_y)
-                    result = getattr(self, attr).set_position(self.player, orientation, x, y)
+        for ship in self.list:
+            result = False
+            while not result:
+                orientation = randint(0, 1)
+                limit_x = ship.length - 1 if orientation else 0  # Ограничитель для случайных чисел,
+                limit_y = 0 if orientation else ship.length - 1  # что бы корабль не вылазил за поле
+                x = randint(0, 9 - limit_x)
+                y = randint(0, 9 - limit_y)
+                result = ship.set_position(self.player, orientation, x, y)
         print('Done!')
 
 
@@ -183,8 +142,8 @@ class Control:
 
             if not enemy_ship_status:
                 x, y = enemy_ship.x, enemy_ship.y
-                enemy_ship.ship_drawing(enemy_ship, enemy, x, y, 2, 8, 'field', False)
-                enemy_ship.ship_drawing(enemy_ship, self.player, x, y, 1, 8, 'enemy_field', False)
+                ship_drawing(enemy_ship, enemy, x, y, 2, 8, 'field', False)
+                ship_drawing(enemy_ship, self.player, x, y, 1, 8, 'enemy_field', False)
         else:
             enemy.field[y][x] = 'miss'
             self.player.enemy_field[y][x] = 'miss'
@@ -211,3 +170,41 @@ def beautiful_coordinates_input(orientation=True):  # Ввод координа�
                     return ship_orientation, int(pattern[x]), y
                 return int(pattern[x]), y
         print('Error: wrong coordinate!')
+
+
+def ship_drawing(ship_obj, player, x, y, filler, wrap, field='field', error=True):
+
+    def wrap_creator(obj, *args):
+        if args[0] >= 0 and args[1] >= 0:
+            try:
+                getattr(obj, field)[args[0]][args[1]] = wrap
+            except IndexError:
+                pass
+
+    if ship_obj.horizontal:
+        for i in range(ship_obj.length):  # Ставим горизонтальный корабль
+            if error and getattr(player, field)[y][x + i]:
+                raise IndexError
+            getattr(player, field)[y][x + i] = filler
+
+        for i in range(3):  # Ставим ограничитель вокруг горизонтального корабля
+            wrap_creator(player, y - 1 + i, x - 1)
+            wrap_creator(player, y - 1 + i, x + ship_obj.length)
+
+        for i in range(ship_obj.length):
+            wrap_creator(player, y + 1, x + i)
+            wrap_creator(player, y - 1, x + i)
+
+    else:
+        for i in range(ship_obj.length):  # Ставим вертикальный корабль
+            if error and getattr(player, field)[y + i][x]:
+                raise IndexError
+            getattr(player, field)[y + i][x] = filler
+
+        for i in range(3):  # Ставим ограничитель вокруг вертикального корабля
+            wrap_creator(player, y - 1, x - 1 + i)
+            wrap_creator(player, y + ship_obj.length, x - 1 + i)
+
+        for i in range(ship_obj.length):
+            wrap_creator(player, y + i, x - 1)
+            wrap_creator(player, y + i, x + 1)

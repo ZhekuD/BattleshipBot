@@ -4,4 +4,4 @@ __pycache__/
 venv/
 .idea/
 info.log
-1.py
+botlog.log
