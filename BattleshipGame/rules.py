@@ -1,12 +1,15 @@
 from random import randint
+from json import dumps, loads
 
 
 class Player:
-    def __init__(self):
+    def __init__(self, input_data=None):
+        input_data = input_data if input_data else {}
+        self.counter = 0
+        self.hp = 10
         self.control = Control(self)
         self.ships = Ships(self)
-        self.hp = 10
-        self.field = [
+        self.field = input_data.get('field') or [
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -19,7 +22,7 @@ class Player:
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         ]
 
-        self.enemy_field = [
+        self.enemy_field = input_data.get('enemy_field') or [
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -31,9 +34,26 @@ class Player:
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         ]
+
+    def data_output(self):
+        field_data = [[str(cell) if isinstance(cell, Ship) else cell for cell in line] for line in self.field]
+        enemy_filed_data = [[cell for cell in line] for line in self.enemy_field]
+        ships_data = self.ships.data_output()
+        return dumps({'field': field_data, 'enemy_field': enemy_filed_data, "ships_data": ships_data})
 
     def data_input(self, json):
-        pass
+        input_dict = loads(json)
+        for ship_obj in self.ships.list:
+            ship_obj.__dict__ = input_dict['ships_data'][str(ship_obj)]
+        self.enemy_field = input_dict['enemy_field']
+        self.field = [
+            [
+                tuple(filter(lambda x: str(x) == cell, self.ships.list))[0]
+                if str(cell)[:1] == 'S' else cell
+                for cell in line
+            ]
+            for line in input_dict['field']
+        ]
 
     def show_field(self, field=True):
         a = self.field if field else self.enemy_field
@@ -43,6 +63,8 @@ class Player:
 
 class Ship:
     def __init__(self, length, player):
+        player.counter += 1
+        self.number = player.counter
         self.player = player
         self.horizontal = None
         self.x = None
@@ -53,7 +75,7 @@ class Ship:
             self.health = length
 
     def __repr__(self):
-        return f'S{self.length}'
+        return f'S{self.length}_{self.number}'
 
     def hit(self):
         self.health -= 1
@@ -99,7 +121,12 @@ class Ships:
         return status
 
     def data_output(self):
-        pass
+        data = {}
+        for ship in self.list:
+            new_dict = ship.__dict__.copy()
+            new_dict['player'] = None
+            data[f'{ship}'] = new_dict
+        return data
 
     def ships_deploy(self):
         for ship in self.list:
