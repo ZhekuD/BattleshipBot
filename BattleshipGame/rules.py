@@ -9,31 +9,8 @@ class Player:
         self.hp = 10
         self.control = Control(self)
         self.ships = Ships(self)
-        self.field = input_data.get('field') or [
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        ]
-
-        self.enemy_field = input_data.get('enemy_field') or [
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        ]
+        self.field = input_data.get('field') or field_factory()
+        self.enemy_field = input_data.get('enemy_field') or field_factory()
 
     def data_output(self):
         field_data = [[str(cell) if isinstance(cell, Ship) else cell for cell in line] for line in self.field]
@@ -178,7 +155,7 @@ class Control:
         return enemy_ship_status
 
 
-def beautiful_coordinates_input(orientation=True):  # Ввод координат и проверка их валидности
+def beautiful_coordinates_input(orientation=True, c_input=False):  # Ввод координат и проверка их валидности
     ship_orientation = None
     coordinates_pattern = {
         'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4,
@@ -187,7 +164,7 @@ def beautiful_coordinates_input(orientation=True):  # Ввод координа�
     while True:
         if orientation:
             ship_orientation = bool(input('is it horizontal? '))
-        coor = input('write coordinate: ')
+        coor = c_input or input('write coordinate: ')
         pattern = coordinates_pattern
         if 1 < len(coor) < 4 and coor[0].isalpha() and coor[1:].isdigit():
             x = coor[0].lower()
@@ -235,3 +212,32 @@ def ship_drawing(ship_obj, player, x, y, filler, wrap, field='field', error=True
         for i in range(ship_obj.length):
             wrap_creator(player, y + i, x - 1)
             wrap_creator(player, y + i, x + 1)
+
+
+def field_factory():
+    # field = [
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    # ]
+    field = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+    for i in range(9):
+        field.append(field[i].copy())
+    return field
+
+
+def create_new_game(ai=None):
+    p1 = Player()
+    p2 = Player()
+    if ai:
+        from BattleshipGame.ai import AI
+        ai = AI(p2)
+        return p1, p2, ai
+    return p1, p2

@@ -10,6 +10,7 @@ setup(
     author_email='zhekud@gmail.com',
     description='weather bot',
     install_requires=[
-        'python-telegram-bot>=11.1.0',
+        'python-telegram-bot>=11.1.0'
+        'Pillow==6.0.0'
     ]
 )
