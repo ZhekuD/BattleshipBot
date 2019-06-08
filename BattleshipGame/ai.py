@@ -15,9 +15,6 @@ class AI:
         self.memory = loads(json)
 
     def auto_shoot(self, enemy):
-        if type(self.memory) is list:
-            pass
-
         if self.memory:
             next_key = sample(self.memory.keys(), 1)[0]
             if not self.memory[next_key]:
@@ -27,10 +24,10 @@ class AI:
             self.memory[next_key].remove(next_choice)
 
             if cell_status is None:
-                return
+                return 'missed'
             if cell_status is False:
                 self.memory, self.success_cell = None, None
-                return
+                return 'kill'
             if cell_status is True:
                 if len(self.memory) == 2:
                     self.memory.pop('y') if next_key == 'x' else self.memory.pop('x')
@@ -41,7 +38,7 @@ class AI:
                 if next_key == 'y' and y + 1 < 10 and y - 1 >= 0:
                     new_next_cell = (x, y + 1) if y > self.success_cell[1] else (x, y - 1)
                     self.memory[next_key].append(new_next_cell)
-                return
+                return 'hit'
 
         while True:
             rx = randint(0, 9)
@@ -64,5 +61,7 @@ class AI:
                             ) if i is not None
                         ]
                     }
-                    return
-                return
+                    return 'hit'
+                if cell_status is False:
+                    return 'kill'
+                return 'miss'

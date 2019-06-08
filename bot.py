@@ -1,7 +1,6 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from telegram import ReplyKeyboardMarkup
-from BattleshipGame.rules import Player, beautiful_coordinates_input, create_new_game
-from BattleshipGame.ai import AI
+from BattleshipGame.rules import beautiful_coordinates_input, create_new_game
 from dbcommands import db_data_input, db_data_output
 from imagerender import create_picture
 from configparser import ConfigParser
@@ -31,7 +30,7 @@ def info(bot, update):
     )
 
 
-def startnewgame(bot, update, args):
+def startnewgame(bot, update):
     player1.data_erase(), player2.data_erase()
     ai.memory = None
 
@@ -43,22 +42,20 @@ def startnewgame(bot, update, args):
     keyboard_markup = ReplyKeyboardMarkup(keyboard)
     bot.send_message(
         chat_id=update.message.chat_id,
-        text=r'starting game...',
+        text='starting game...\nYour field:',
         reply_markup=keyboard_markup
     )
     image_sender(update.message.chat_id, player1.field)
 
 
 def shoot(bot, update):
+    chat_id = update.message.chat_id
     if update.message.text in [k for i in keyboard for k in i]:
         coordinates = beautiful_coordinates_input(False, update.message.text)
 
         db_data = db_data_output(update)
         if not db_data:
-            bot.send_message(
-                chat_id=update.message.chat_id,
-                text='PLS START GAME'
-            )
+            bot.send_message(chat_id=chat_id, text='PLS START GAME')
             return
 
         field_data, enemy_data, memory = db_data
@@ -70,8 +67,14 @@ def shoot(bot, update):
         message = str(result)
 
         if result != 'Error':
-            # ai.auto_shoot(player1)
-            image_sender(update.message.chat_id, player1.enemy_field)
+            enemy_result = ai.auto_shoot(player1)
+            image_sender(chat_id, player1.enemy_field)
+
+            if enemy_result in ('hit', 'kill'):
+                bot.send_message(chat_id=chat_id, text='Enemy hit your ship!')
+                image_sender(chat_id, player1.field)
+            else:
+                bot.send_message(chat_id=chat_id, text='Enemy missed!')
 
             player_data = player1.data_output()
             enemy_data = player2.data_output()
@@ -134,7 +137,7 @@ if __name__ == "__main__":
     info_handler = CommandHandler('info', info)  # Обработка команды /info
     dispatcher.add_handler(info_handler)
 
-    weather_handler = CommandHandler('startnewgame', startnewgame, pass_args=True)  # Обработка команды /startnewgame
+    weather_handler = CommandHandler('startnewgame', startnewgame)  # Обработка команды /startnewgame
     dispatcher.add_handler(weather_handler)
 
     shoot_handler = MessageHandler(Filters.regex(r'^[A-Ja-j](\d|10)$'), shoot)  # Обработка выстрела
