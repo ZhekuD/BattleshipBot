@@ -22,6 +22,7 @@ class Player:
         input_dict = loads(json)
         for ship_obj in self.ships.list:
             ship_obj.__dict__ = input_dict['ships_data'][str(ship_obj)]
+            ship_obj.__dict__['player'] = self
         self.enemy_field = input_dict['enemy_field']
         self.field = [
             [
@@ -31,6 +32,12 @@ class Player:
             ]
             for line in input_dict['field']
         ]
+
+    def data_erase(self):
+        self.counter = 0
+        self.hp = 10
+        self.ships = Ships(self)
+        self.field, self.enemy_field = field_factory(), field_factory()
 
     def show_field(self, field=True):
         a = self.field if field else self.enemy_field
@@ -215,18 +222,6 @@ def ship_drawing(ship_obj, player, x, y, filler, wrap, field='field', error=True
 
 
 def field_factory():
-    # field = [
-    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    # ]
     field = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
     for i in range(9):
         field.append(field[i].copy())

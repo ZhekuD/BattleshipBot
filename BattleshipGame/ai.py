@@ -1,4 +1,5 @@
 from random import randint, sample
+from json import dumps, loads
 
 
 class AI:
@@ -6,6 +7,12 @@ class AI:
         self.player = player
         self.memory = None
         self.success_cell = None
+
+    def memory_output(self):
+        return dumps(self.memory)
+
+    def memory_input(self, json):
+        self.memory = loads(json)
 
     def auto_shoot(self, enemy):
         if type(self.memory) is list:

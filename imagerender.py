@@ -1,4 +1,5 @@
 from PIL import Image
+from io import BytesIO
 from pathlib import Path
 from BattleshipGame.rules import Ship
 
@@ -25,5 +26,6 @@ def create_picture(field):
             else:
                 new_im.paste(empty_cell, next(generator))
 
-    new_im.save('field.jpeg')
-    return new_im
+    output = BytesIO()
+    new_im.save(output, format="JPEG")
+    return output.getvalue()

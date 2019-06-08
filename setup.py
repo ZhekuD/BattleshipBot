@@ -11,6 +11,7 @@ setup(
     description='weather bot',
     install_requires=[
         'python-telegram-bot>=11.1.0'
-        'Pillow==6.0.0'
+        'Pillow>=6.0.0'
+        'requests>=2.22.0'
     ]
 )
