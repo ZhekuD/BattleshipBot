@@ -55,7 +55,10 @@ def shoot(bot, update):
 
         db_data = db_data_output(update)
         if not db_data:
-            bot.send_message(chat_id=chat_id, text='PLS START GAME')
+            bot.send_message(
+                chat_id=chat_id,
+                text="You don't have any game\n\nWrite /startnewgame"
+            )
             return
 
         field_data, enemy_data, memory = db_data

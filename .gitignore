@@ -1,5 +1,4 @@
 config.ini
-database.sql
 __pycache__/
 *.py[cod]
 *$py.class
@@ -7,3 +6,4 @@ venv/
 .idea/
 info.log
 botlog.log
+database.sql

@@ -54,7 +54,7 @@ def create_table(cursor, *args):
         username, 
         data, 
         enemy_data, 
-        ai_memory, 
+        ai_memory DEFAULT 'null', 
         allgames INT, 
         wingames INT
     )""")
