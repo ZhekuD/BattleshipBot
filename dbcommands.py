@@ -15,7 +15,7 @@ def context_manager(func):
 @context_manager
 def db_data_input(cursor, update, game_data, enemy_game_data, memory='null'):
     user_id = update.message.from_user.id
-    username = update.message.from_user.username
+    username = update.message.from_user.first_name
 
     result = cursor.execute("SELECT id FROM users WHERE id=?", (user_id, )).fetchone()
     if not result:

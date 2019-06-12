@@ -3,17 +3,19 @@ from io import BytesIO
 from pathlib import Path
 from BattleshipGame.rules import Ship
 
-imageFolder = Path(__file__).resolve().parent.joinpath('images')
 
-empty_cell = Image.open(imageFolder.joinpath('empty.png'))
-ship_cell = Image.open(imageFolder.joinpath('ship.png'))
-miss_cell = Image.open(imageFolder.joinpath('miss.png'))
-hit_cell = Image.open(imageFolder.joinpath('hit.png'))
+FOLDER = Path(__file__).resolve().parent.joinpath('images')
+
+empty_cell = Image.open(FOLDER.joinpath('empty.jpg'))
+ship_cell = Image.open(FOLDER.joinpath('ship.jpg'))
+miss_cell = Image.open(FOLDER.joinpath('miss.jpg'))
+hit_cell = Image.open(FOLDER.joinpath('hit.jpg'))
+empty_field = Image.open(FOLDER.joinpath('field.jpg'))
 
 
 def create_picture(field):
-    generator = ((i, k) for k in range(0, 300, 30) for i in range(0, 300, 30))
-    new_im = Image.new('RGB', (300, 300))
+    generator = ((i, k) for k in range(20, 220, 20) for i in range(20, 220, 20))
+    new_im = empty_field
 
     for line in field:
         for cell in line:
