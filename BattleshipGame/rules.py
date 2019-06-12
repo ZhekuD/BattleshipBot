@@ -16,13 +16,20 @@ class Player:
         field_data = [[str(cell) if isinstance(cell, Ship) else cell for cell in line] for line in self.field]
         enemy_filed_data = [[cell for cell in line] for line in self.enemy_field]
         ships_data = self.ships.data_output()
-        return dumps({'field': field_data, 'enemy_field': enemy_filed_data, "ships_data": ships_data})
+        player_hp = self.hp
+        return dumps({
+            'field': field_data,
+            'enemy_field': enemy_filed_data,
+            'ships_data': ships_data,
+            'hp': player_hp
+        })
 
     def data_input(self, json):
         input_dict = loads(json)
         for ship_obj in self.ships.list:
             ship_obj.__dict__ = input_dict['ships_data'][str(ship_obj)]
             ship_obj.__dict__['player'] = self
+        self.hp = input_dict['hp']
         self.enemy_field = input_dict['enemy_field']
         self.field = [
             [

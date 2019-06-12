@@ -6,4 +6,4 @@ venv/
 .idea/
 info.log
 botlog.log
-database.sql
+database.sqlite3

@@ -1,24 +1,39 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from telegram import ReplyKeyboardMarkup
+
 from BattleshipGame.rules import beautiful_coordinates_input, create_new_game
-from dbcommands import db_data_input, db_data_output
+
+from dbcommands import (
+    db_data_input,
+    db_data_output,
+    db_data_erase,
+    db_statistic
+)
+
 from imagerender import create_picture
 from configparser import ConfigParser
+
 from requests import post
 from pathlib import Path
+
 import logging
 
 
 def start(bot, update):
     user_id = update.message.chat.id
-    user_username = update.message.chat.username
+    user_username = update.message.chat.first_name
     print(f"> new user connected (ID: {user_id}, NAME: {user_username})")
 
-    keyboard_markup = ReplyKeyboardMarkup([['/startnewgame', '/info', '/statistic']])
+    keyboard_markup = ReplyKeyboardMarkup(
+        [
+            ['/startnewgame', '/info', '/statistic']
+        ]
+    )
 
     bot.send_message(
         chat_id=update.message.chat_id,
-        text=f"I'm a bot and you are my Master, please talk to me, {update.message.chat.first_name}!",
+        text=f"I'm a bot and you are my Master, please talk to me, "
+        f"{update.message.chat.first_name}!",
         reply_markup=keyboard_markup
     )
 
@@ -50,51 +65,78 @@ def startnewgame(bot, update):
 
 def shoot(bot, update):
     chat_id = update.message.chat_id
-    if update.message.text in [k for i in keyboard for k in i]:
-        coordinates = beautiful_coordinates_input(False, update.message.text)
+    coordinates = beautiful_coordinates_input(False, update.message.text)
 
-        db_data = db_data_output(update)
-        if not db_data:
+    db_data = db_data_output(update)
+    if not db_data or not db_data[0]:
+        bot.send_message(
+            chat_id=chat_id,
+            text="You don't have any game\n\nWrite /startnewgame"
+        )
+        return
+
+    field_data, enemy_data, memory = db_data
+    player1.data_input(field_data)
+    player2.data_input(enemy_data)
+    ai.memory_input(memory)
+
+    result = player1.control.shoot(player2, *coordinates)
+
+    if result != 'Error':
+        enemy_result = ai.auto_shoot(player1)
+        image_sender(chat_id, player1.enemy_field)
+
+        if not player2.hp:
+            party = u'\U0001F389'
             bot.send_message(
                 chat_id=chat_id,
-                text="You don't have any game\n\nWrite /startnewgame"
+                text=f'{party} Congratulation! You won! {party}\n'
+                'To play one more time write /startnewgame'
             )
+            db_data_erase(update, victory=True)
             return
 
-        field_data, enemy_data, memory = db_data
-        player1.data_input(field_data)
-        player2.data_input(enemy_data)
-        ai.memory_input(memory)
-
-        result = player1.control.shoot(player2, *coordinates)
-        message = str(result)
-
-        if result != 'Error':
-            enemy_result = ai.auto_shoot(player1)
-            image_sender(chat_id, player1.enemy_field)
-
-            if enemy_result in ('hit', 'kill'):
-                bot.send_message(chat_id=chat_id, text='Enemy hit your ship!')
-                image_sender(chat_id, player1.field)
-            else:
-                bot.send_message(chat_id=chat_id, text='Enemy missed!')
-
-            player_data = player1.data_output()
-            enemy_data = player2.data_output()
-            ai_memory = ai.memory_output()
-            db_data_input(update, player_data, enemy_data, ai_memory)
-
+        if enemy_result in ('hit', 'kill'):
+            bot.send_message(chat_id=chat_id, text='Enemy hit your ship!')
+            image_sender(chat_id, player1.field)
         else:
-            message = 'You already shoot in this coordinates!'
+            bot.send_message(chat_id=chat_id, text='Enemy missed!')
+
+        if not player1.hp:
+            sad = u'\U0001F622'
+            bot.send_message(
+                chat_id=chat_id,
+                text=f'You lose this game... {sad}\n'
+                'Maybe next time you will be more lucky\n/startnewgame'
+            )
+            db_data_erase(update, victory=False)
+            return
+
+        player_data = player1.data_output()
+        enemy_data = player2.data_output()
+        ai_memory = ai.memory_output()
+        db_data_input(update, player_data, enemy_data, ai_memory)
 
     else:
-        message = 'Wrong coordinates!'
+        message = 'You already shoot in this coordinates!'
+        bot.send_message(chat_id=update.message.chat_id, text=message)
 
-    bot.send_message(chat_id=update.message.chat_id, text=message)
+
+def statistic(bot, update):
+    allgames, wingames = db_statistic(update)
+    bot.send_message(
+        chat_id=update.message.chat_id,
+        text=f'WINS: {wingames}\n'
+        f'LOSES: {allgames - wingames}\n'
+        f'TOTAL: {allgames}'
+    )
 
 
 def unknown(bot, update):
-    bot.send_message(chat_id=update.message.chat_id, text='Unknown command :(')
+    bot.send_message(
+        chat_id=update.message.chat_id,
+        text='Unknown command :('
+    )
 
 
 def image_sender(chat_id, player_field):
@@ -119,9 +161,11 @@ if __name__ == "__main__":
     TOKEN = config['Bot']['Token']
 
     # log settings
-    logging.basicConfig(filename='botlog.log',
-                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                        level=logging.INFO)
+    logging.basicConfig(
+        filename='botlog.log',
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        level=logging.INFO
+    )
 
     # create Player's objects
     player1, player2, ai = create_new_game(ai=True)
@@ -139,6 +183,9 @@ if __name__ == "__main__":
 
     info_handler = CommandHandler('info', info)  # Обработка команды /info
     dispatcher.add_handler(info_handler)
+
+    statistic_handler = CommandHandler('statistic', statistic)  # Обработка команды /statistic
+    dispatcher.add_handler(statistic_handler)
 
     weather_handler = CommandHandler('startnewgame', startnewgame)  # Обработка команды /startnewgame
     dispatcher.add_handler(weather_handler)
