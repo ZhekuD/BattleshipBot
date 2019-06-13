@@ -124,7 +124,8 @@ def shoot(bot, update):
 
 
 def statistics(bot, update):
-    allgames, wingames = db_statistic(update)
+    data = db_statistic(update)
+    allgames, wingames = data if data else (0, 0)
     bot.send_message(
         chat_id=update.message.chat_id,
         text=f'WINS: {wingames}\n'
@@ -164,7 +165,7 @@ if __name__ == "__main__":
     # log settings
     logging.basicConfig(
         filename='botlog.log',
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        format='\n%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         level=logging.INFO
     )
 

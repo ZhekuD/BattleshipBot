@@ -33,11 +33,17 @@ class AI:
                     self.memory.pop('y') if next_key == 'x' else self.memory.pop('x')
                 x, y = next_choice
                 if next_key == 'x' and x + 1 < 10 and x - 1 >= 0:
-                    new_next_cell = (x + 1, y) if x > self.success_cell[0] else (x - 1, y)
-                    self.memory[next_key].append(new_next_cell)
+                    if x > self.success_cell[0] and not self.player.enemy_field[y][x + 1]:
+                        self.memory[next_key].append((x + 1, y))
+                    if x < self.success_cell[0] and not self.player.enemy_field[y][x - 1]:
+                        self.memory[next_key].append((x - 1, y))
+
                 if next_key == 'y' and y + 1 < 10 and y - 1 >= 0:
-                    new_next_cell = (x, y + 1) if y > self.success_cell[1] else (x, y - 1)
-                    self.memory[next_key].append(new_next_cell)
+                    if y > self.success_cell[1] and not self.player.enemy_field[y + 1][x]:
+                        self.memory[next_key].append((x, y + 1))
+                    if y < self.success_cell[1] and not self.player.enemy_field[y - 1][x]:
+                        self.memory[next_key].append((x, y - 1))
+
                 return 'hit'
 
         while True:
