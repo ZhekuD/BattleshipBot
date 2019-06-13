@@ -24,7 +24,7 @@ class AI:
             self.memory[next_key].remove(next_choice)
 
             if cell_status is None:
-                return 'missed'
+                return 'miss'
             if cell_status is False:
                 self.memory, self.success_cell = None, None
                 return 'kill'
