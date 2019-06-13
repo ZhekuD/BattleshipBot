@@ -85,7 +85,6 @@ class Ship:
             ship_drawing(self, player, x, y, filler=self, wrap='8')
         except IndexError:  # Если корабль не поместился - востанавливаем изначальное поле
             player.field = field_copy
-            # print('Error: not enough space!')
             return False
 
         self.x = int(x)
@@ -138,7 +137,6 @@ class Ships:
                 x = randint(0, 9 - limit_x)
                 y = randint(0, 9 - limit_y)
                 result = ship.set_position(self.player, orientation, x, y)
-        print('Done!')
 
 
 class Control:
@@ -148,7 +146,6 @@ class Control:
     def shoot(self, enemy, x, y):
         enemy_ship_status = None
         if self.player.enemy_field[y][x]:
-            print('Error: You already shoot in this coordinates!')
             return 'Error'
 
         if isinstance(enemy.field[y][x], Ship):
@@ -156,7 +153,6 @@ class Control:
             enemy_ship_status = enemy_ship.hit()
             enemy.field[y][x] = 2
             self.player.enemy_field[y][x] = 'hit'
-            print('Hit!')
 
             if not enemy_ship_status:
                 x, y = enemy_ship.x, enemy_ship.y

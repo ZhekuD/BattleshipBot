@@ -2,20 +2,18 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from telegram import ReplyKeyboardMarkup
 
 from BattleshipGame.rules import beautiful_coordinates_input, create_new_game
-
+from imagerender import create_picture
 from dbcommands import (
     db_data_input,
     db_data_output,
     db_data_erase,
-    db_statistic
+    db_statistic,
+    create_table
 )
 
-from imagerender import create_picture
 from configparser import ConfigParser
-
 from requests import post
 from pathlib import Path
-
 import logging
 
 
@@ -24,16 +22,15 @@ def start(bot, update):
     user_username = update.message.chat.first_name
     print(f"> new user connected (ID: {user_id}, NAME: {user_username})")
 
-    keyboard_markup = ReplyKeyboardMarkup(
-        [
-            ['/startnewgame', '/info', '/statistic']
-        ]
-    )
+    keyboard_markup = ReplyKeyboardMarkup(menu_keyboard)
 
     bot.send_message(
         chat_id=update.message.chat_id,
-        text=f"I'm a bot and you are my Master, please talk to me, "
-        f"{update.message.chat.first_name}!",
+        text=f"{update.message.chat.first_name}, I can play battleship with you!\n\n"
+        'You can control me by sending these commands:\n\n'
+        '/startnewgame - to start new game\n'
+        '/info - to see info about bot\n'
+        '/statistics - to see your statistics',
         reply_markup=keyboard_markup
     )
 
@@ -41,7 +38,8 @@ def start(bot, update):
 def info(bot, update):
     bot.send_message(
         chat_id=update.message.chat_id,
-        text="I'm a bot, that can play battleship with you!"
+        text="Created by Eugene Molchanov\n"
+             "https://github.com/ZhekuD/BattleshipBot"
     )
 
 
@@ -88,10 +86,11 @@ def shoot(bot, update):
 
         if not player2.hp:
             party = u'\U0001F389'
+            keyboard_markup = ReplyKeyboardMarkup(menu_keyboard)
             bot.send_message(
                 chat_id=chat_id,
-                text=f'{party} Congratulation! You won! {party}\n'
-                'To play one more time write /startnewgame'
+                text=f'{party} Congratulation! You won! {party}\n',
+                reply_markup=keyboard_markup
             )
             db_data_erase(update, victory=True)
             return
@@ -104,10 +103,12 @@ def shoot(bot, update):
 
         if not player1.hp:
             sad = u'\U0001F622'
+            keyboard_markup = ReplyKeyboardMarkup(menu_keyboard)
             bot.send_message(
                 chat_id=chat_id,
                 text=f'You lose this game... {sad}\n'
-                'Maybe next time you will be more lucky\n/startnewgame'
+                'Maybe next time you will be more lucky',
+                reply_markup=keyboard_markup
             )
             db_data_erase(update, victory=False)
             return
@@ -122,7 +123,7 @@ def shoot(bot, update):
         bot.send_message(chat_id=update.message.chat_id, text=message)
 
 
-def statistic(bot, update):
+def statistics(bot, update):
     allgames, wingames = db_statistic(update)
     bot.send_message(
         chat_id=update.message.chat_id,
@@ -173,6 +174,7 @@ if __name__ == "__main__":
     # create pattern for keyboard
     alphabet = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J')
     keyboard = [[alpha + str(num) for alpha in alphabet] for num in range(1, 11)]
+    menu_keyboard = [['/startnewgame'], ['/info'], ['/statistics']]
 
     # bot settings
     updater = Updater(token=TOKEN)
@@ -184,7 +186,7 @@ if __name__ == "__main__":
     info_handler = CommandHandler('info', info)  # Обработка команды /info
     dispatcher.add_handler(info_handler)
 
-    statistic_handler = CommandHandler('statistic', statistic)  # Обработка команды /statistic
+    statistic_handler = CommandHandler('statistics', statistics)  # Обработка команды /statistic
     dispatcher.add_handler(statistic_handler)
 
     weather_handler = CommandHandler('startnewgame', startnewgame)  # Обработка команды /startnewgame

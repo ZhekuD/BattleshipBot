@@ -1,11 +1,24 @@
 import sqlite3
+from pathlib import Path
+
+
+# if not Path('__file__').resolve().parent.joinpath('config.ini').exists():
+#     config['Bot'] = {'Token': 'None'}
+#     with open('config.ini', 'w') as configfile:
+#         config.write(configfile)
+# config.read('config.ini')
+# TOKEN = config['Bot']['Token']
 
 
 def context_manager(func):
     def wrap(*args, **kwargs):
         conn = sqlite3.connect('./database.sqlite3')
         curs = conn.cursor()
-        result = func(curs, *args, **kwargs)
+        try:
+            result = func(curs, *args, **kwargs)
+        except sqlite3.OperationalError:
+            create_table()
+            result = func(curs, *args, **kwargs)
         conn.commit()
         conn.close()
         return result
