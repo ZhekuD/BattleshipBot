@@ -7,8 +7,7 @@ from dbcommands import (
     db_data_input,
     db_data_output,
     db_data_erase,
-    db_statistic,
-    create_table
+    db_statistic
 )
 
 from configparser import ConfigParser
@@ -26,7 +25,7 @@ def start(bot, update):
 
     bot.send_message(
         chat_id=update.message.chat_id,
-        text=f"{update.message.chat.first_name}, I can play battleship with you!\n\n"
+        text=f"{user_username}, I can play battleship with you!\n\n"
         'You can control me by sending these commands:\n\n'
         '/startnewgame - to start new game\n'
         '/info - to see info about bot\n'
@@ -172,7 +171,7 @@ if __name__ == "__main__":
     # create Player's objects
     player1, player2, ai = create_new_game(ai=True)
 
-    # create pattern for keyboard
+    # create pattern for keyboards
     alphabet = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J')
     keyboard = [[alpha + str(num) for alpha in alphabet] for num in range(1, 11)]
     menu_keyboard = [['/startnewgame'], ['/info'], ['/statistics']]

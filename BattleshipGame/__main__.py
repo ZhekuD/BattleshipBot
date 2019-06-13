@@ -30,7 +30,10 @@ def menu():
         print(r'\o/')
         return menu()
     if item == 3:
-        print('\nCreated by ZhekuD')
+        print(
+            '\nCreated by Eugene Molchanov\n'
+            'https://github.com/ZhekuD/BattleshipBot'
+        )
         input('Press [ENTER] to continue...\n')
         return menu()
     if item == 4:
@@ -50,7 +53,7 @@ if __name__ == '__main__':
            // __ )____ _/ /_/ /_/ /__  _____/ /_  (_)___
           // __  / __ `/ __/ __/ / _ \/ ___/ __ \/ / __ \
          // /_/ / /_/ / /_/ /_/ /  __(__  ) / / / / /_/ /
-        //_____/\__,_/\__/\__/_/\___/____/_/ /_/_/ .___/  by ZhekuD.
+        //_____/\__,_/\__/\__/_/\___/____/_/ /_/_/ .___/
                                                 /_/
         '''
     )
@@ -58,7 +61,6 @@ if __name__ == '__main__':
 
     auto = menu()
 
-    # Запускаем создание игового поля для игрока №1
     if not auto:
         player1_field_generator = player1.ships.ships_deploy()
         interface.field_render(player1, 'field')
@@ -73,12 +75,10 @@ if __name__ == '__main__':
         player1.ships.auto_ships_deploy()
         interface.field_render(player1)
 
-    # Запускаем создание игового поля для игрока №2
     print('Generating field for player2...')
     player2.ships.auto_ships_deploy()
 
     while True:
-        # Этап стрельбы игрока
         print('player1\'s shoot...')
         result = 'Error'
         while result == 'Error':
@@ -89,7 +89,6 @@ if __name__ == '__main__':
             print('VICTORY!!!')
             break
 
-        # Этап стрельбы компьютера
         print('AI\'s shoot...')
         ai.auto_shoot(player1)
         # interface.field_render(player2)

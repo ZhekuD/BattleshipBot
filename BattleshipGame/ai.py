@@ -46,7 +46,7 @@ class AI:
 
                 return 'hit'
 
-        while True:
+        while True:  # If nothing in memory
             rx = randint(0, 9)
             ry = randint(0, 9)
             cell = self.player.enemy_field[ry][rx]
@@ -54,7 +54,7 @@ class AI:
             if cell == 0:
                 self.success_cell = (rx, ry)
                 cell_status = self.player.control.shoot(enemy, rx, ry)
-                if cell_status is True:  # Если в корабль попали, но он остался жив
+                if cell_status is True:
                     self.memory = {
                         'x': [i for i in (
                                 (rx - 1, ry) if rx - 1 >= 0 and not self.player.enemy_field[ry][rx - 1] else None,

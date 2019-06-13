@@ -1,13 +1,4 @@
 import sqlite3
-from pathlib import Path
-
-
-# if not Path('__file__').resolve().parent.joinpath('config.ini').exists():
-#     config['Bot'] = {'Token': 'None'}
-#     with open('config.ini', 'w') as configfile:
-#         config.write(configfile)
-# config.read('config.ini')
-# TOKEN = config['Bot']['Token']
 
 
 def context_manager(func):
